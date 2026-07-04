@@ -1,0 +1,3 @@
+file_name: pazl2.txt
+Console mode: +
+Graphics mode: 
