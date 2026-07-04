@@ -1,7 +1,7 @@
 import asyncio
 from pathlib import Path
 import flet as ft
-import pazl
+import puzzle
 
 
 def prepare_data(text: str) -> str:
@@ -17,18 +17,6 @@ def read_file_content(path: str) -> str:
   return Path(path).read_text(encoding='utf-8')
 
 
-def format_result(path: list[str], total_puzzle: str, total_pieces: int) -> tuple[str, str, str]:
-  if not path:
-    stats = f'Solution not found (fragments: {total_pieces})'
-    sequence = ''
-    answer = ''
-  else:
-    stats = f'Used fragments: {len(path)} of {total_pieces}'
-    sequence = ' -> '.join(path)
-    answer = total_puzzle
-  return stats, sequence, answer
-
-
 def main(page: ft.Page):
   page.title = 'Digital Puzzle'
   page.padding = 20
@@ -36,11 +24,20 @@ def main(page: ft.Page):
   page.window.height = 700
 
   status_text = ft.Text('Select a file with puzzle fragments', size=14)
-  stats_text = ft.Text('', size=16, weight=ft.FontWeight.BOLD)
   progress = ft.ProgressRing(visible=False, width=24, height=24)
 
+  num_fragments_field = ft.TextField(
+    label='Number of fragments used:',
+    read_only=True,
+    expand=True,
+  )
+  max_len_field = ft.TextField(
+    label='Maximum sequence length in characters:',
+    read_only=True,
+    expand=True,
+  )
   path_field = ft.TextField(
-    label='Fragment sequence',
+    label='Fragment order:',
     multiline=True,
     read_only=True,
     min_lines=4,
@@ -48,7 +45,7 @@ def main(page: ft.Page):
     expand=True,
   )
   result_field = ft.TextField(
-    label='Largest digital puzzle (answer)',
+    label='Maximum sequence:',
     multiline=True,
     read_only=True,
     min_lines=6,
@@ -61,7 +58,8 @@ def main(page: ft.Page):
 
     if total_pieces == 0:
       status_text.value = 'File is empty or contains no data'
-      stats_text.value = ''
+      num_fragments_field.value = ''
+      max_len_field.value = ''
       path_field.value = ''
       result_field.value = ''
       page.update()
@@ -73,16 +71,17 @@ def main(page: ft.Page):
     page.update()
 
     try:
-      puzzle_path, total_puzzle = await asyncio.to_thread(pazl.solve_puzzle, data)
-      stats, sequence, answer = format_result(puzzle_path, total_puzzle, total_pieces)
+      puzzle_path, total_puzzle = await asyncio.to_thread(puzzle.solve_puzzle, data)
 
       status_text.value = f'File: {source_name}'
-      stats_text.value = stats
-      path_field.value = sequence
-      result_field.value = answer
+      num_fragments_field.value = str(len(puzzle_path))
+      max_len_field.value = str(len(total_puzzle))
+      path_field.value = ' -> '.join(puzzle_path)
+      result_field.value = total_puzzle
     except Exception as error:
       status_text.value = f'Error: {error}'
-      stats_text.value = ''
+      num_fragments_field.value = ''
+      max_len_field.value = ''
       path_field.value = ''
       result_field.value = ''
     finally:
@@ -123,7 +122,10 @@ def main(page: ft.Page):
       spacing=12,
       vertical_alignment=ft.CrossAxisAlignment.CENTER,
     ),
-    stats_text,
+    ft.Row(
+      controls=[num_fragments_field, max_len_field],
+      spacing=12,
+    ),
     path_field,
     result_field,
   )

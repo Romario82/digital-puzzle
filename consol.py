@@ -1,8 +1,7 @@
-import pazl
+import puzzle
 
 
 def open_file(filename):
-  #file = 'pazl.txt'
   file = filename
   with open(file, encoding='utf-8') as file_object:
     lines = file_object.readlines()
@@ -17,27 +16,25 @@ def prepare_data(lines):
 def startconsol(filename):
     lines = open_file(filename)
     data = prepare_data(lines)
-    path, total_puzzle = pazl.solve_puzzle(data)
+    path, total_puzzle = puzzle.solve_puzzle(data)
 
-    total_pieces = len(data.splitlines())
-    print(f"Number of fragments used: {len(path)} из {total_pieces}")
-    print("-" * 40)
-    print("Sequence of fragments:")
-    print(" -> ".join(path))
-    print("-" * 40)
-    print("Largest Number Puzzle (Answer):")
+    print(f"Number of fragments used: {len(path)}")
+    print(f"Maximum sequence length in characters: {len(total_puzzle)}")
+    print("\nMaximum sequence:")
     print(total_puzzle)
+    print("\nFragment order:")
+    print(" -> ".join(path))
 
 if __name__ == "__main__":
-  lines = open_file()
+  import sys
+  filename = sys.argv[1] if len(sys.argv) > 1 else 'pazl.txt'
+  lines = open_file(filename)
   data = prepare_data(lines)
-  path, total_puzzle = pazl.solve_puzzle(data)
+  path, total_puzzle = puzzle.solve_puzzle(data)
 
-  total_pieces = len(data.splitlines())
-  print(f"Number of fragments used: {len(path)} из {total_pieces}")
-  print("-" * 40)
-  print("Sequence of fragments:")
-  print(" -> ".join(path))
-  print("-" * 40)
-  print("Largest Number Puzzle (Answer):")
+  print(f"Number of fragments used: {len(path)}")
+  print(f"Maximum sequence length in characters: {len(total_puzzle)}")
+  print("\nMaximum sequence:")
   print(total_puzzle)
+  print("\nFragment order:")
+  print(" -> ".join(path))
